@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="theme-color" content="#101611" />
+		<meta name="description" content="Frontière : un jeu de combat tactique en 3D dans le navigateur." />
+		<title>Frontière | Opération Aube froide</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="style.css" />
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"
+				}
+			}
+		</script>
+		<script type="module" src="script.js"></script>
+	</head>
+	<body>
+		<main class="game-shell">
+			<canvas id="battlefield" aria-label="Champ de bataille en 3D"></canvas>
+
+			<header class="topbar">
+				<a class="brand" href="#" aria-label="Frontière, accueil">
+					<span class="brand-mark">F<span></span></span>
+					<span class="brand-name">FRONTIÈRE<small>SIMULATION DE COMBAT</small></span>
+				</a>
+				<div class="mission-tag"><i></i> OPÉRATION AUBE FROIDE <span>·</span> SECTEUR 04</div>
+				<div class="top-status"><span class="live-dot"></span> EN LIGNE <b id="clock">06:42</b></div>
+			</header>
+
+			<section class="mission-card" aria-label="Objectif de mission">
+				<div class="eyebrow"><span class="eyebrow-line"></span> OBJECTIF PRINCIPAL</div>
+				<h1>PRENEZ LE<br /><em>CONTRÔLE</em></h1>
+				<p>Neutralisez les unités ennemies, puis prenez le contrôle de leur base.</p>
+				<div class="objective-row"><span class="objective-icon">01</span><span>Base hostile</span><strong id="base-status">À CAPTURER</strong></div>
+				<div class="objective-row"><span class="objective-icon">02</span><span>Unités hostiles</span><strong id="enemy-count">03</strong></div>
+				<div class="capture-panel" id="capture-panel"><div><span id="capture-label">ZONE DE CAPTURE</span><b id="capture-value">0%</b></div><i><span id="capture-meter"></span></i></div>
+			</section>
+
+			<section class="team-status" aria-label="État des bases">
+				<div class="base-label"><span class="flag flag-friendly">A</span><div><b>BASE ALLIÉE</b><small>SECTEUR ALPHA</small></div></div>
+				<div class="base-connector"><span></span><i>8,4 KM</i><span></span></div>
+				<div class="base-label base-enemy"><span class="flag flag-enemy">E</span><div><b>BASE HOSTILE</b><small>SECTEUR BRAVO</small></div></div>
+			</section>
+
+			<aside class="squad-panel" aria-label="Escouade alliée">
+				<div class="panel-heading"><span>ESCOUADE</span><span class="squad-live">● EN APPUI</span></div>
+				<div class="squad-member"><span class="member-avatar">01</span><span class="member-copy"><b>ÉQUIPE CHARLIE</b><small>Infanterie · en position</small></span><span class="member-health"><i></i></span></div>
+				<div class="squad-member"><span class="member-avatar air-avatar">02</span><span class="member-copy"><b>ESCADRILLE 2</b><small>Appui aérien · actif</small></span><span class="member-health"><i></i></span></div>
+			</aside>
+
+			<div class="center-reticle" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+
+			<section class="bottom-hud" aria-label="État du véhicule">
+				<div class="vehicle-block">
+					<div class="vehicle-emblem" id="vehicle-emblem"><span></span></div>
+					<div><small>VÉHICULE ACTIF</small><strong id="vehicle-name">M1A2 ABRAMS</strong><span id="vehicle-role">CHAR DE COMBAT · ALPHA 01</span></div>
+				</div>
+				<div class="health-block"><div class="hud-label"><span>INTÉGRITÉ</span><b id="health-value">100%</b></div><div class="meter"><i id="health-meter"></i></div><div class="hud-sub"><span id="health-state">SYSTÈMES OPÉRATIONNELS</span><span>BLINDAGE COMPOSITE</span></div></div>
+				<div class="ammo-block"><span class="ammo-icon">✳</span><div><small>ARMEMENT</small><strong id="weapon-name">CANON 120 MM</strong><span>MUNITIONS <b>ILLIMITÉES</b></span></div></div>
+			</section>
+
+			<div class="speed-hud"><small>VITESSE</small><strong id="speed-value">00</strong><span id="speed-unit">KM/H</span></div>
+			<div class="altitude-hud" id="altitude-hud"><small>ALTITUDE</small><strong id="altitude-value">018</strong><span>M</span></div>
+
+			<nav class="vehicle-switch" aria-label="Choisir un véhicule">
+				<button class="vehicle-choice selected" data-vehicle="tank" title="Prendre le contrôle du char (F)"><span class="choice-key">1</span><span class="choice-shape tank-shape"></span><span>CHAR</span></button>
+				<button class="vehicle-choice" data-vehicle="plane" title="Prendre le contrôle de l'avion (F)"><span class="choice-key">2</span><span class="choice-shape plane-shape"></span><span>AVION</span></button>
+				<button class="deploy-button" id="deploy-button" title="Sortir du véhicule ou y remonter avec E"><span id="deploy-icon">↘</span><b id="deploy-label">SORTIR</b></button>
+			</nav>
+
+			<div class="minimap" aria-label="Carte tactique">
+				<div class="map-top"><span>CARTE TACTIQUE</span><b>N</b></div>
+				<div class="map-grid"><i class="map-contour contour-one"></i><i class="map-contour contour-two"></i><i class="map-road"></i><i class="map-base friendly-map">A</i><i class="map-base enemy-map">E</i><i class="map-player"></i><i class="map-hostile hostile-one"></i><i class="map-hostile hostile-two"></i><i class="map-hostile hostile-three"></i></div>
+				<div class="map-legend"><span><i class="legend-friendly"></i> ALLIÉ</span><span><i class="legend-enemy"></i> HOSTILE</span></div>
+			</div>
+
+			<div class="feed" id="feed" aria-live="polite"><span class="feed-time">06:42</span><span>UNITÉS AMIES DÉPLOYÉES SUR LE SECTEUR</span></div>
+
+			<div class="start-screen" id="start-screen">
+				<div class="start-content">
+					<div class="start-kicker"><span></span> CAMPAGNE SOLO · MISSION 01</div>
+					<h2>LA LIGNE<br /><em>DE FRONT</em></h2>
+					<p>Le poste de commandement ennemi verrouille la vallée. Prenez le contrôle du secteur.</p>
+					<button id="start-button" class="start-button"><span>ENTRER EN OPÉRATION</span><b>↗</b></button>
+					<div class="start-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> DÉPLACER</span><span><kbd>E</kbd> SORTIR / REMONTER</span><span><kbd>Q</kbd><kbd>E</kbd> ALTITUDE AVION</span><span><kbd>SOURIS</kbd> VISER</span><span><kbd>CLIC</kbd> TIRER</span><span><kbd>F</kbd> CHANGER D'ENGIN</span></div>
+				</div>
+				<div class="start-coordinates">48°51′24″N&nbsp; 2°21′08″E <span>·</span> ZONE CONTESTÉE</div>
+			</div>
+
+			<div class="toast" id="toast" role="status"></div>
+			<div class="game-over" id="game-over"><div class="over-line"></div><small id="end-kicker">MISSION TERMINÉE</small><h2 id="end-title">SECTEUR<br /><em>SÉCURISÉ</em></h2><p id="end-copy">Le poste ennemi a été neutralisé.</p><button id="restart-button">REJOUER <span>↗</span></button></div>
+		</main>
+	</body>
+</html>
